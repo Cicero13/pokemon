@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Searchbar } from 'react-native-paper';
+import { Searchbar, Provider, Modal, Portal } from 'react-native-paper';
 import {
   SafeAreaView,
   View,
@@ -31,7 +31,7 @@ export default function App() {
       })
   },[]); */
 
-  useEffect(() =>{
+  useEffect(() => {
     if (busca === '') {
       fetch('https://pokeapi.co/api/v2/pokemon/', {
         method: 'GET',
@@ -52,8 +52,13 @@ export default function App() {
     }
   }, [busca])
 
+  const [visible, setVisible] = useState(false);
+  const showModal = () => setVisible(true);
+  const hideModal = () => setVisible(false);
+
   return (
     <SafeAreaView style={styles.container}>
+
       <View style={styles.searchArea}>
         <Searchbar
           placeholder="Pesquise um Pokemon"
@@ -65,10 +70,13 @@ export default function App() {
         data={list}
         style={styles.list}
         keyExtractor={(list) => list.name}
-        renderItem={({ item }) => <ListaPokemons data={item} />}
+        renderItem={({ item }) => <ListaPokemons data={item} modal={showModal} />}
       />
-      <TouchableOpacity style={styles.btnTime}><Text style={{textAlign:'center', color:'white'}}>Gerar Time</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.btnTime}><Text style={{ textAlign: 'center', color: 'white' }}>Gerar Time</Text></TouchableOpacity>
       <StatusBar hidden />
+      <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
+        <Text>Ola meu MOdal</Text>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -100,15 +108,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-btnTime:{
-  position: 'absolute',
-  right: 20,
-  bottom: 20,
-  width: 100,
-  paddindtop:10,
-  paddingBottom: 10,
-  backgroundColor: '#242425',
-  borderRadius: 20,
-},
+  btnTime: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    width: 100,
+    paddindtop: 10,
+    paddingBottom: 10,
+    backgroundColor: '#242425',
+    borderRadius: 20,
+  },
+  containerStyle: {
+    backgroundColor: 'white',
+    padding: 20
+  },
 });
 

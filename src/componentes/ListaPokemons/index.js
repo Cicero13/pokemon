@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, View, Image, Text, StyleSheet } from 'react-native';
 
-const ListaPokemons = ({ data }) => {
+const ListaPokemons = ({ data, modal }) => {
 
     const { name, url } = data;
     const pokemonNumber = url.replace('https://pokeapi.co/api/v2/pokemon', '').replace('/', '').replace('/', '');
@@ -18,11 +18,10 @@ const ListaPokemons = ({ data }) => {
         }
     })
         .then(response => response.json())
-        .then(data => {setHabilidade(data.descriptions[0].description)})
-
+        .then(data => { setHabilidade(data.descriptions[0].description) })
 
     return (
-        <TouchableOpacity style={styles.item}>
+        <TouchableOpacity style={styles.item} onPress={modal}>
             <Image source={{ uri: imageUrl }} style={styles.itemPhoto} />
             <View style={styles.itemInfo}>
                 <Text style={styles.itemP1}>{name}</Text>
