@@ -7,10 +7,9 @@ const ListaPokemons = ({ data, modal }) => {
     const pokemonNumber = url.replace('https://pokeapi.co/api/v2/pokemon', '').replace('/', '').replace('/', '');
     const imageUrl = 'https://cdn.traction.one/pokedex/pokemon/' + pokemonNumber + '.png';
 
-    const urlEvo = 'https://pokeapi.co/api/v2/evolution-chain/' + pokemonNumber + '/';
     const [habilidade, setHabilidade] = useState([]);
+    const habi = 'https://pokeapi.co/api/v2/ability/' + pokemonNumber + '/';
 
-    const habi = 'https://pokeapi.co/api/v2/characteristic/' + pokemonNumber + '/';
     fetch(habi, {
         method: 'GET',
         headers: {
@@ -18,14 +17,14 @@ const ListaPokemons = ({ data, modal }) => {
         }
     })
         .then(response => response.json())
-        .then(data => { setHabilidade(data.descriptions[0].description) })
+        .then(data => {setHabilidade(data)})
 
     return (
         <TouchableOpacity style={styles.item} onPress={modal}>
             <Image source={{ uri: imageUrl }} style={styles.itemPhoto} />
             <View style={styles.itemInfo}>
                 <Text style={styles.itemP1}>{name}</Text>
-                <Text style={styles.itemP2}>{habilidade}</Text>
+                <Text style={styles.itemP2}>Abilitie: {habilidade.name}</Text>              
             </View>
         </TouchableOpacity>
     );
@@ -57,6 +56,12 @@ const styles = StyleSheet.create({
     itemP2: {
         fontSize: 18,
         color: '#999999',
+        alignItems: 'center'
+    },
+    itemP3: {
+        fontSize: 16,
+        color: '#999999',
+        alignItems: 'center'
     },
 });
 

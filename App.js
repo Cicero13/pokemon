@@ -17,23 +17,65 @@ export default function App() {
 
   const [busca, setBusca] = useState('');
   const [list, setList] = useState([]);
+  const [time, setTime] = useState([]);
+  const [estado, setEstado] = useState('busca');
+  console.disableYellowbox = true;
 
-  /* useEffect(() => {
-    fetch('https://pokeapi.co/api/v2/pokemon/?offset=20&limit=50', {
-      method: 'GET',
-      headers: {
-        'Accept': 'aplication/json'
+  if (estado == 'busca') {
+    useEffect(() => {
+      if (busca === '') {
+        fetch('https://pokeapi.co/api/v2/pokemon/?limit=50', {
+          method: 'GET',
+          headers: {
+            'Accept': 'aplication/json'
+          }
+        })
+          .then(response => response.json())
+          .then(data => {
+            setList([]),
+            setList(data.results)
+          })
+      } else {
+        setList(
+          list.filter(
+            (item) =>
+              item.name.toLowerCase().indexOf(busca.toLowerCase()) > -1
+          ));
       }
-    })
-      .then(response => response.json())
-      .then(data => {
-        setList(data.results)
-      })
-  },[]); */
+    }, [busca])
 
-  useEffect(() => {
-    if (busca === '') {
-      fetch('https://pokeapi.co/api/v2/pokemon/', {
+    const [visible, setVisible] = useState(false);
+    const showModal = () => setVisible(true);
+    const hideModal = () => setVisible(false);
+
+    return (
+      <SafeAreaView style={styles.container}>
+
+        <View style={styles.searchArea}>
+          <Searchbar
+            placeholder="Pesquise um Pokemon"
+            onChangeText={(t) => setBusca(t)}
+            value={busca}
+          />
+        </View>
+        <FlatList
+          data={list}
+          style={styles.list}
+          keyExtractor={(list) => list.name}
+          renderItem={({ item }) => <ListaPokemons data={item} modal={showModal} />}
+        />
+        <TouchableOpacity onPress={() => setEstado('time')} style={styles.btnTime}><Text style={{ textAlign: 'center', color: 'white' }}>Gerar Time</Text></TouchableOpacity>
+        <StatusBar hidden />
+        <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
+          <Text>Ola meu MOdal</Text>
+        </Modal>
+      </SafeAreaView>
+    );
+  } else if (estado == 'time') {
+
+    useEffect(() => {
+
+      fetch('https://pokeapi.co/api/v2/pokemon/?limit=50', {
         method: 'GET',
         headers: {
           'Accept': 'aplication/json'
@@ -41,44 +83,40 @@ export default function App() {
       })
         .then(response => response.json())
         .then(data => {
-          setList(data.results)
+          id = [];
+          setList([]);
+          for (let i = 0; i < 5; i++) {
+            id[i] = parseInt((Math.random() * 50));
+            setList(atual => [...atual, data.results[id[i]]]);
+          }
         })
-    } else {
-      setList(
-        list.filter(
-          (item) =>
-            item.name.toLowerCase().indexOf(busca.toLowerCase()) > -1
-        ));
-    }
-  }, [busca])
+    }, [estado])
 
-  const [visible, setVisible] = useState(false);
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
+    const [visible, setVisible] = useState(false);
+    const showModal = () => setVisible(true);
+    const hideModal = () => setVisible(false);
 
-  return (
-    <SafeAreaView style={styles.container}>
+    return (
+      <SafeAreaView style={styles.container}>
 
-      <View style={styles.searchArea}>
-        <Searchbar
-          placeholder="Pesquise um Pokemon"
-          onChangeText={(t) => setBusca(t)}
-          value={busca}
+        <View>
+          <Text style={styles.gerarTime}>Time de Pokemons Gerado</Text>
+        </View>
+        <FlatList
+          data={list}
+          style={styles.list}
+          keyExtractor={(list) => list.name}
+          renderItem={({ item }) => <ListaPokemons data={item} modal={showModal} />}
         />
-      </View>
-      <FlatList
-        data={list}
-        style={styles.list}
-        keyExtractor={(list) => list.name}
-        renderItem={({ item }) => <ListaPokemons data={item} modal={showModal} />}
-      />
-      <TouchableOpacity style={styles.btnTime}><Text style={{ textAlign: 'center', color: 'white' }}>Gerar Time</Text></TouchableOpacity>
-      <StatusBar hidden />
-      <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
-        <Text>Ola meu MOdal</Text>
-      </Modal>
-    </SafeAreaView>
-  );
+        <TouchableOpacity onPress={() => setEstado('busca')} style={styles.btnTime}><Text style={{ textAlign: 'center', color: 'white' }}>Home</Text></TouchableOpacity>
+        <StatusBar hidden />
+        <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
+          <Text>Ola meu MOdal</Text>
+        </Modal>
+      </SafeAreaView>
+    );
+
+  }
 };
 
 const styles = StyleSheet.create({
@@ -122,5 +160,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20
   },
+  gerarTime:{
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 20,
+  }
 });
 
