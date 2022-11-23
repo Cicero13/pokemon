@@ -1,52 +1,50 @@
-import React from 'react';
 import { useState, useEffect } from 'react';
-import { Searchbar, Provider, Modal, Portal } from 'react-native-paper';
+import { Searchbar } from 'react-native-paper';
 import {
   SafeAreaView,
   View,
-  TextInput,
   FlatList,
   StyleSheet,
   TouchableOpacity,
   Text,
+  RefreshControlBase,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import ListaPokemons from './src/componentes/ListaPokemons';
+import uuid from 'react-native-uuid';
+import Evolucao from './src/componentes/Evolucao';
 
 export default function App() {
 
   const [busca, setBusca] = useState('');
   const [list, setList] = useState([]);
-  const [time, setTime] = useState([]);
   const [estado, setEstado] = useState('busca');
-  console.disableYellowbox = true;
+  const [off, setOff] = useState(0);
+
+  const [evolucao, setEvolucao] = useState([]);
+  const [pokeID, setPokeID] = useState(0);
 
   if (estado == 'busca') {
+    setList[0];
     useEffect(() => {
       if (busca === '') {
-        fetch('https://pokeapi.co/api/v2/pokemon/?limit=50', {
+        fetch(`https://pokeapi.co/api/v2/pokemon/?offset=${off}&limit=50`, {
           method: 'GET',
           headers: {
             'Accept': 'aplication/json'
           }
         })
           .then(response => response.json())
-          .then(data => {
-            setList([]),
-            setList(data.results)
-          })
+          .then(data => { setList(atual => [...atual, ...data.results]) })
       } else {
         setList(
           list.filter(
             (item) =>
               item.name.toLowerCase().indexOf(busca.toLowerCase()) > -1
           ));
+        setOff(0);
       }
-    }, [busca])
-
-    const [visible, setVisible] = useState(false);
-    const showModal = () => setVisible(true);
-    const hideModal = () => setVisible(false);
+    }, [off, busca])
 
     return (
       <SafeAreaView style={styles.container}>
@@ -61,21 +59,20 @@ export default function App() {
         <FlatList
           data={list}
           style={styles.list}
-          keyExtractor={(list) => list.name}
-          renderItem={({ item }) => <ListaPokemons data={item} modal={showModal} />}
+          keyExtractor={() => uuid.v4()}
+          onEndReached={() => setOff(atual => atual + 20)}
+          onEndReachedThreshold={0.1}
+          renderItem={({ item }) => <ListaPokemons data={item} setEstado={setEstado} setPokeID={setPokeID} />}
         />
         <TouchableOpacity onPress={() => setEstado('time')} style={styles.btnTime}><Text style={{ textAlign: 'center', color: 'white' }}>Gerar Time</Text></TouchableOpacity>
         <StatusBar hidden />
-        <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
-          <Text>Ola meu MOdal</Text>
-        </Modal>
       </SafeAreaView>
     );
   } else if (estado == 'time') {
 
     useEffect(() => {
 
-      fetch('https://pokeapi.co/api/v2/pokemon/?limit=50', {
+      fetch('https://pokeapi.co/api/v2/pokemon/?limit=1154', {
         method: 'GET',
         headers: {
           'Accept': 'aplication/json'
@@ -86,15 +83,11 @@ export default function App() {
           id = [];
           setList([]);
           for (let i = 0; i < 5; i++) {
-            id[i] = parseInt((Math.random() * 50));
+            id[i] = parseInt((Math.random() * 1000));
             setList(atual => [...atual, data.results[id[i]]]);
           }
         })
     }, [estado])
-
-    const [visible, setVisible] = useState(false);
-    const showModal = () => setVisible(true);
-    const hideModal = () => setVisible(false);
 
     return (
       <SafeAreaView style={styles.container}>
@@ -105,17 +98,55 @@ export default function App() {
         <FlatList
           data={list}
           style={styles.list}
-          keyExtractor={(list) => list.name}
-          renderItem={({ item }) => <ListaPokemons data={item} modal={showModal} />}
+          keyExtractor={() => uuid.v4()}
+          renderItem={({ item }) => <ListaPokemons data={item} setEstado={setEstado} setPokeID={setPokeID}/>}
         />
-        <TouchableOpacity onPress={() => setEstado('busca')} style={styles.btnTime}><Text style={{ textAlign: 'center', color: 'white' }}>Home</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => {setEstado('busca'); setList([])}} style={styles.btnTime}><Text style={{ textAlign: 'center', color: 'white' }}>Home</Text></TouchableOpacity>
         <StatusBar hidden />
-        <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.containerStyle}>
-          <Text>Ola meu MOdal</Text>
-        </Modal>
       </SafeAreaView>
     );
 
+  } else if (estado == 'evolucao') {
+    console.log(pokeID)
+
+    useEffect(() => {
+      fetch(`https://pokeapi.co/api/v2/evolution-chain/${pokeID}/`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'aplication/json'
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data.chain.evolves_to[0]);
+          const auxTest = data.chain.evolves_to[0];
+          console.log(auxTest);
+          if (auxTest) {
+            setEvolucao([auxTest.species]);
+            if (auxTest.evolves_to) {
+              setEvolucao(atual => [...atual, auxTest.evolves_to[0].species])
+            }
+          }
+        })
+    }, [pokeID]);
+
+
+
+    return (
+      <SafeAreaView style={styles.container}>
+        <View>
+          <Text style={styles.gerarTime}>Possiveis Evoluções do Pokemons selecionado</Text>
+        </View>
+        <FlatList
+          data={evolucao}
+          style={styles.list}
+          keyExtractor={() => uuid.v4()}
+          renderItem={({ item }) => <Evolucao data={item} />}
+        />
+        <TouchableOpacity onPress={() => {setEstado('busca'); setList([])}} style={styles.btnTime}><Text style={{ textAlign: 'center', color: 'white' }}>Home</Text></TouchableOpacity>
+        <StatusBar hidden />
+      </SafeAreaView>
+    );
   }
 };
 
@@ -160,7 +191,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20
   },
-  gerarTime:{
+  gerarTime: {
     textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 20,

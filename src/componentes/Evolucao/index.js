@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, View, Image, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
 
-const ListaPokemons = ({ data, setEstado, setPokeID }) => {
+export default function Evolucao({ data }) {
+
     const [habilidade, setHabilidade] = useState([]);
     const { name, url } = data;
-    const pokemonNumber = url.replace('https://pokeapi.co/api/v2/pokemon', '').replace('/', '').replace('/', '');
-    const imageUrl = `https://cdn.traction.one/pokedex/pokemon/${pokemonNumber}.png`;
+    const pokemonNumber = url.replace('https://pokeapi.co/api/v2/pokemon-species', '').replace('/', '').replace('/', '');
+    const imageUrl = 'https://cdn.traction.one/pokedex/pokemon/' + pokemonNumber + '.png';
 
-   
+
     const habi = 'https://pokeapi.co/api/v2/ability/' + pokemonNumber + '/';
+
 
     useEffect(() => {
         fetch(habi, {
@@ -21,20 +23,17 @@ const ListaPokemons = ({ data, setEstado, setPokeID }) => {
             .then(data => { setHabilidade(data) })
     }, [])
 
-
     return (
-        <TouchableOpacity style={styles.item} onPress={() => {
-            setEstado('evolucao');
-            setPokeID(pokemonNumber);
-        }}>
+        <View style={styles.item}>
+            <Text> </Text>
             <Image source={{ uri: imageUrl }} style={styles.itemPhoto} />
             <View style={styles.itemInfo}>
                 <Text style={styles.itemP1}>{name}</Text>
                 <Text style={styles.itemP2}>Abilitie: {habilidade.name}</Text>
             </View>
-        </TouchableOpacity>
+        </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     item: {
@@ -47,8 +46,8 @@ const styles = StyleSheet.create({
         paddingBottom: 15,
     },
     itemPhoto: {
-        width: 80,
-        height: 80,
+        width: 50,
+        height: 50,
         borderRadius: 30,
     },
     itemInfo: {
@@ -70,5 +69,3 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
 });
-
-export default ListaPokemons;
